@@ -1,0 +1,26 @@
+---
+# tasks file for ansible-redis
+- name: install latest version
+  apt:
+    name: redis-server
+    update_cache: yes
+    cache_valid_time: 3600
+    state: latest
+  when: "redis_version == 'latest'"
+  notify: restart redis
+
+- name: install specific version
+  apt:
+    name: "redis-server={{ redis_version }}"
+    update_cache: yes
+    cache_valid_time: 3600
+  when: "redis_version != 'latest'"
+
+- name: update redis.conf
+  template:
+    src: redis.conf.j2
+    dest: /etc/redis/redis.conf
+    owner: redis
+    group: root
+    mode: 0600
+  notify: restart redis

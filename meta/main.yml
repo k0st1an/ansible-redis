@@ -1,0 +1,14 @@
+galaxy_info:
+  author: Konstantin Kruglov
+  description: deploy redis
+  license: Apache license v2
+  min_ansible_version: 1.2
+  galaxy_tags:
+    - db
+    - network
+  platforms:
+  - name: Debian
+    versions:
+    - jessie
+
+dependencies: []
