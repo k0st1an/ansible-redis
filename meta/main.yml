@@ -5,10 +5,10 @@ galaxy_info:
   min_ansible_version: 1.2
   galaxy_tags:
     - db
-    - network
+    - nosql
   platforms:
-  - name: Debian
+  - name: Ubuntu
     versions:
-    - jessie
+      - all
 
 dependencies: []

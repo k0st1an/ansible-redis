@@ -1,26 +1,73 @@
 ---
 # tasks file for ansible-redis
-- name: install latest version
+- name: Update system settings -- vm.overcommit_memory
+  sysctl:
+    name: vm.overcommit_memory
+    value: 1
+    state: present
+    sysctl_set: yes
+    reload: yes
+  notify: restart redis
+
+- name: Update system settings -- vm.swappiness
+  sysctl:
+    name: vm.swappiness
+    value: 0
+    state: present
+    reload: yes
+  notify: restart redis
+
+- name: Update system settings -- net.core.somaxconn
+  sysctl:
+    name: net.core.somaxconn
+    value: '{{ redis_tcp_backlog }}'
+    state: present
+    sysctl_set: yes
+    reload: yes
+  notify: restart redis
+
+- name: Update system settings -- transparent_hugepage
+  shell: 'echo never > {{ item }}'
+  with_items:
+    - /sys/kernel/mm/transparent_hugepage/enabled
+    - /sys/kernel/mm/transparent_hugepage/defrag
+  changed_when: False
+
+- name: Update init script for disable transparent_hugepage
+  template:
+    src: disable-thp-init.sh
+    dest: /etc/init.d/disable-thp
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Set up init script
+  command: update-rc.d disable-thp defaults
+  args:
+    creates: /etc/rc2.d/S01disable-thp
+
+- name: Add Redis Repo into source list
+  apt_repository:
+    repo: 'ppa:chris-lea/redis-server'
+    state: present
+    update_cache: yes
+
+- name: Install Redis
   apt:
     name: redis-server
     update_cache: yes
     cache_valid_time: 3600
-    state: latest
-  when: "redis_version == 'latest'"
-  notify: restart redis
 
-- name: install specific version
-  apt:
-    name: "redis-server={{ redis_version }}"
-    update_cache: yes
-    cache_valid_time: 3600
-  when: "redis_version != 'latest'"
+- name: Backup original config (copy)
+  command: cp /etc/redis/redis.conf /etc/redis/redis.orig.conf
+  args:
+    creates: /etc/redis/redis.orig.conf
 
-- name: update redis.conf
+- name: Update redis.conf
   template:
-    src: redis.conf.j2
+    src: redis.conf
     dest: /etc/redis/redis.conf
     owner: redis
-    group: root
-    mode: 0600
+    group: redis
+    mode: 0640
   notify: restart redis

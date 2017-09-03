@@ -1,2 +1,4 @@
 ansible.cfg
 *.retry
+hosts
+dev.yml

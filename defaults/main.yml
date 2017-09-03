@@ -1,11 +1,13 @@
 ---
 # defaults file for ansible-redis
-redis_version   : "latest" # or maybe specific version
-
-# configuration file
-redis_pidfile   : "/var/run/redis/redis-server.pid"
-redis_logfile   : "/var/log/redis/redis-server.log"
-redis_password  : ""
-redis_bind      : "127.0.0.1"
-redis_port      : 6379
-redis_dir       : "/var/lib/redis"
+redis_daemonize:      'yes'
+redis_supervised:     'systemd'
+redis_databases:      16
+redis_hz:             10
+redis_port:           6379
+redis_tcp_backlog:    65536
+# if `protected-mode` if enable when `password` is not be empty
+# for more detail see comment in config file
+redis_protected_mode: 'yes'
+redis_password:       ''
+redis_bind:           127.0.0.1
